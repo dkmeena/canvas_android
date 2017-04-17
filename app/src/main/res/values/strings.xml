@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">UI</string>
+    <string-array name="line_array">
+        <item>None</item>
+        <item>Central</item>
+        <item>Harbour</item>
+        <item>Western</item>
+
+    </string-array>
+</resources>
