@@ -78,6 +78,7 @@ public class Analyzer {
             */
             sql = "SELECT * FROM "+ DatabaseHandler.locationMAP +" WHERE cellID = "+loc.cellID+ " AND operator = \""+op+"\"";
             ArrayList<ArrayList<String>> resultSet = new DatabaseHandler(context).readLocationMap(sql);
+           // Log.d("sds", String.valueOf(resultSet));
             if(!resultSet.isEmpty())    {
 
                 double dis = 999999999;
@@ -85,8 +86,11 @@ public class Analyzer {
                     double zx = haversine(loc.lat, loc.lon, Double.parseDouble(s.get(6)), Double.parseDouble(s.get(7)));
                     if(zx < dis){
                         dis = zx;
+
                         lat = Double.parseDouble(s.get(4));
                         lon = Double.parseDouble(s.get(5));
+                       // Log.d("qwre",s.get(4)+" "+s.get(5));
+                        //Log.d("asdas",lat+" "+lon);
                     }
 
                 }

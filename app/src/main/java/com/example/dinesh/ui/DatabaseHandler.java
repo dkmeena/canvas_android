@@ -43,6 +43,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         db.execSQL(sql);
         dataFile = readCsvFile(cntxt.getResources().openRawResource(R.raw.data));
+        //Log.d("db", String.valueOf(dataFile));
         insertLocationMap(dataFile, db);
     }
 
@@ -69,12 +70,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             cv.put("lon", Double.parseDouble(d[5]));
             cv.put("netlat", Double.parseDouble(d[6]));
             cv.put("netlon", Double.parseDouble(d[7]));
-            Log.d("asa",d[4]+" "+d[5]);
-            Double a = (Double) cv.get("netlon");
-            Log.d("cv", Double.toString(a));
-//           Log.d("insertLocation", Double.parseDouble(d[6]) + " " + Double.parseDouble(d[7]));
-           // Toast.makeText(cntxt, d[6] + " " + d[7], Toast.LENGTH_SHORT).show();
+
             db.insert(locationMAP, null, cv);
+
         }
         Log.d(TAG, "insertLocationMap: Added data to db!!!");
 
@@ -89,22 +87,24 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
 //        Log.d("SQL",sql);
         Cursor c = db.rawQuery(sql, null);
+
         if(c != null && c.moveToFirst()) {
+
             while (!c.isAfterLast()) {
                 //Log.d("sql",c.getString());
                //
-//                Log.d("readLocationMap", c.getString(5));
-//                Log.d("readLocationMap", c.getString(6));
+
                 //
                 read = new ArrayList<>();
                 read.add(c.getString(0));
                 read.add(c.getString(1));
                 read.add(c.getString(2));
                 read.add(c.getString(3));
-                read.add(c.getString(4));
-                read.add(c.getString(5));
-                read.add(c.getString(6));
-                read.add(c.getString(7));
+                read.add(String.valueOf(c.getDouble(4)));
+                read.add(String.valueOf(c.getDouble(5)));
+                read.add(String.valueOf(c.getDouble(6)));
+                read.add(String.valueOf(c.getDouble(7)));
+
                 locationMapData.add(read);
                 c.moveToNext();
             }

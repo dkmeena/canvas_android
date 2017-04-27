@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -20,7 +21,6 @@ import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
-import android.content.pm.PackageManager;
 
 public class
         DataCollector extends Service implements SensorEventListener   {
@@ -44,16 +44,12 @@ public class
         //tm2 = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         MyListener = new MyPhoneStateListener();
         tm.listen(MyListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-        //tm2.listen(MyListener, MyPhoneStateListener.LISTEN_CELL_LOCATION);
-
-        // DKM //
 
         locationManagerNET = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
 
         locationManagerNET.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNET);
 
-        // ----- //
 
         /****** Initialise & register variables required to collect Motion Information ******/
         sensormanager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -163,6 +159,7 @@ public class
             x = event.values[0];
             y = event.values[1];
             z = event.values[2];
+           // Log.d("as","acc");
             MotionData.motion.add(new MotionData(x, y, z));
         }
     }
