@@ -21,9 +21,18 @@ import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
+import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Calendar;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class
-        DataCollector extends Service implements SensorEventListener   {
+        DataCollector extends Service    {
 
     public String operator = "", TAG = "DataCollector";
     public int cellID = 0, rssi = 0, count=0, flag=100000, dataArraySizeThresh = 20;
@@ -32,80 +41,71 @@ public class
     public long tsLoc;
     public SensorManager sensormanager;
     public TelephonyManager tm,tm2;
-    public MyPhoneStateListener MyListener;
+    public int seconds=0,a=0;
+    public String[] stn = new String[0];
     public LocationManager GPSmgr;
     public LocationManager locationManagerNET;
     @Override
     public void onCreate() {
         super.onCreate();
 
-        /****** Initialise variables required to collect GSM Information ******/
-        tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        //tm2 = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        MyListener = new MyPhoneStateListener();
-        tm.listen(MyListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-
-        locationManagerNET = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
 
-        locationManagerNET.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNET);
+        InputStream is;
+        is = getResources().openRawResource(R.raw.journey);
 
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
-        /****** Initialise & register variables required to collect Motion Information ******/
-        sensormanager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        sensormanager.registerListener(this,
-                sensormanager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_UI);
+        seconds=0;
+        a=0;
+        Timer timer = new Timer ();
+        TimerTask hourlyTask = new TimerTask () {
+            @Override
+            public void run () {
+               // Log.d("run", String.valueOf(seconds));
 
-        /***** Code to register location manager for GPS *******/
+                try {
+                    String csvLine;
+                    if(a==0){
+                        if ((csvLine = reader.readLine()) != null){
+                            stn = csvLine.split(",");
+                            if(Integer.parseInt(stn[0])==seconds){
+                               // Log.d("seconds", String.valueOf(seconds));
+                                Data.location.add(new Data(stn[1],Integer.parseInt(stn[2]),Integer.parseInt(stn[3]),Double.parseDouble(stn[4]),Double.parseDouble(stn[5]),tsLoc,Double.parseDouble(stn[6]),Double.parseDouble(stn[7])));
+                            }
+                            else a=1;
+                        }
+                    }
+                    else{
+                        if(Integer.parseInt(stn[0])==seconds){
+                           // Log.d("seconds", String.valueOf(seconds));
+                            Data.location.add(new Data(stn[1],Integer.parseInt(stn[2]),Integer.parseInt(stn[3]),Double.parseDouble(stn[4]),Double.parseDouble(stn[5]),tsLoc,Double.parseDouble(stn[6]),Double.parseDouble(stn[7])));
+                            a=0;
+                        }
 
-        GPSmgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    }
+                    seconds=seconds+1;
+                    /*if ((csvLine = reader.readLine()) != null) {
+                        Log.d("csvline",csvLine);
+                        String[] stn = csvLine.split(",");
+                        if(Integer.parseInt(stn[0])==seconds){
+                            Data.location.add(new Data(stn[1],Integer.parseInt(stn[2]),Integer.parseInt(stn[3]),Double.parseDouble(stn[4]),Double.parseDouble(stn[5]),tsLoc,Double.parseDouble(stn[6]),Double.parseDouble(stn[7])));
+                        }
+                        //Thread.sleep(1000);
+                        seconds=seconds+1;
+                    }*/
+                } catch (IOException ex) {
+                    Toast.makeText(getApplicationContext(), "Error in database file loading!!!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        GPSmgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, GPSlistener);
+        timer.schedule(hourlyTask, 0l, 1000);
+
     }
 
-    LocationListener GPSlistener=new LocationListener() {
 
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {}
 
-        @Override
-        public void onProviderEnabled(String provider) {}
-
-        @Override
-        public void onProviderDisabled(String provider) {}
-
-        @Override
-        public void onLocationChanged(Location location) {
-            GPSLat=location.getLatitude();
-            GPSLong=location.getLongitude();
-//            Log.d(TAG, "onLocationChanged: "+GPSLat+","+GPSLong);
-        }
-    };
-
-    LocationListener locationListenerNET=new LocationListener() {
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-        @Override
-        public void onProviderEnabled(String provider) {}
-
-        @Override
-        public void onProviderDisabled(String provider) {}
-
-        @Override
-        public void onLocationChanged(Location location) {
-            GSMLat=location.getLatitude();
-            GSMLong=location.getLongitude();
-
-//           Log.d(TAG, "onLocationChanged: "+GSMLat+","+GSMLong);
-        }
-    };
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
@@ -117,6 +117,9 @@ public class
          ***** Reorient Data every minute
          ***** Send data for "Analysis" every 5 mins
          *************************************************/
+
+
+
         final Thread report = new Thread(){
             @Override
             public void run() {
@@ -125,9 +128,6 @@ public class
                     Thread.sleep(timeInterval);
                 } catch (InterruptedException e) { Log.d(TAG, "Thread Timer Error!!!"); }
 
-                /****** Reorient Accelerometer Data Every minute *******/
-                analyze.reorient(MotionData.motion);
-                MotionData.motion.clear();
 
                 /****** Send data for analysis every 5 mins ******/
                 if(++count%1==0)    {
@@ -139,7 +139,6 @@ public class
                     else    {
 //                        Log.d(TAG, "Not in train!!!!!");
                     }
-                    MotionData.reorientedMotion.clear();
                 }
             }
             }
@@ -152,54 +151,7 @@ public class
     }
 
 
-    /****** Collects accelerometer (X,Y,Z) values only when it updates *******/
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            x = event.values[0];
-            y = event.values[1];
-            z = event.values[2];
-           // Log.d("as","acc");
-            MotionData.motion.add(new MotionData(x, y, z));
-        }
-    }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-
-
-    /****** Collects cellID and rssi values only when it updates *******/
-    private class MyPhoneStateListener extends PhoneStateListener {
-        GsmCellLocation loc;
-
-      /* @Override
-        public void onCellLocationChanged(CellLocation location) {
-            super.onCellLocationChanged(location);
-           loc = (GsmCellLocation) tm.getCellLocation();
-           operator=tm.getNetworkOperatorName();
-            try {
-              cellID = loc.getCid() & 0xffff;
-               tsLoc = System.currentTimeMillis()/1000;
-               Data.location.add(new Data(operator,cellID,rssi,GPSLat,GPSLong,tsLoc,GSMLat,GSMLat));
-                Log.d(TAG, "onCellLocationChanged: " + cellID + "," + rssi);
-           }
-           catch(NullPointerException ne) { cellID = 0; }
-        }*/
-
-        @Override
-        public void onSignalStrengthsChanged(SignalStrength signalStrength) {
-            super.onSignalStrengthsChanged(signalStrength);
-            rssi=-113+2*signalStrength.getGsmSignalStrength();
-            loc = (GsmCellLocation) tm.getCellLocation();
-            operator=tm.getNetworkOperatorName();
-            if(loc!=null) {
-                cellID = loc.getCid() & 0xffff;
-                Data.location.add(new Data(operator,cellID,rssi,GPSLat,GPSLong,tsLoc,GSMLat,GSMLat));
-            }
-            //tsLoc = System.currentTimeMillis()/1000;
-//            Log.d(TAG, "SignalstrengthChanged: "+cellID+","+rssi);
-        }
-    }
 
     @Nullable
     @Override

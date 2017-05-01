@@ -13,6 +13,12 @@
         <item> Nahur</item>, <item> Mulund</item>, <item> Thane</item>, <item> Kalwa</item>, <item> Mumbra</item>, <item> Diva</item>,
         <item> Dombivali</item>, <item> Thakurli</item>, <item> Kalyan</item>
     </string-array>
+    <string-array name="Central_dist">
+    <item>0</item>, <item>1190</item>, <item>2240</item>, <item>4088</item>, <item>5237</item>, <item>6013</item>, <item>7753</item>, <item>8936</item>,
+        <item>10182</item>, <item>12761</item>, <item>15434</item>, <item>17900</item>, <item>19193</item>, <item>22821</item>, <item>24640</item>,
+        <item>26492</item>, <item>28161</item>, <item>30340</item>, <item>32910</item>, <item>35367</item>, <item>38190</item>, <item>40139</item>,
+        <item>44588</item>, <item>45945</item>, <item>47367</item>, <item>51004</item>
+    </string-array>
 
     <string-array name="Harbour">
         <item>Mumbai CST</item>, <item> Masjid bunder</item>, <item> Sandhurst Road</item>, <item> Dockyard Road</item>, <item> Reay Road</item>,
@@ -20,6 +26,13 @@
         <item> Tilak Nagar</item>, <item> Chembur</item>, <item> Govandi</item>, <item> Mankhurd</item>, <item> Vashi</item>, <item> Sanpada</item>,
         <item> Jui Nagar</item>, <item> Nerul</item>, <item> Seewoods-Darave</item>, <item> CBD Belapur</item>, <item> Kharghar</item>, <item> Mansarovar</item>,
         <item> Khandeshwar</item>, <item> Panvel</item>
+    </string-array>
+
+    <string-array name="Harbour_dist">
+        <item>0</item>, <item>1190</item>, <item>2240</item>, <item>2956</item>, <item>4174</item>, <item>5199</item>, <item>7019</item>, <item>9021</item>, <item>9852</item>,
+        <item>11499</item>, <item>13094</item>, <item>14982</item>, <item>16096</item>, <item>17330</item>, <item>19037</item>, <item>20891</item>, <item>28152</item>,
+        <item>29307</item>, <item>30786</item>, <item>33285</item>, <item>34552</item>, <item>36653</item>, <item>38962</item>, <item>41419</item>, <item>43250</item>,
+        <item>46542</item>
     </string-array>
 
     <string-array name="Western">
@@ -30,6 +43,14 @@
         <item> Dahisar</item>, <item> Mira Road</item>, <item> Bhayander</item>, <item> Naigaon</item>, <item> Vasai</item>, <item> Nalasopara</item>,
         <item> Virar</item>, <item>Vaitarna</item>, <item>Saphale</item>, <item>Kelve Road</item>, <item>Palghar</item>, <item>Umroli</item>, <item>Boisar</item>,
         <item>Vangoan</item>, <item>Dahanu Road</item>
+    </string-array>
+
+    <string-array name="Western_dist">
+   <item>0</item>, <item>1218</item>, <item>2052</item>, <item>3423</item>, <item>4272</item>, <item>5623</item>, <item>7324</item>, <item>8713</item>, <item>10151</item>,
+        <item>11312</item>, <item>12684</item>, <item>14388</item>, <item>16067</item>, <item>17483</item>, <item>19417</item>, <item>21699</item>, <item>23528</item>,
+        <item>26691</item>, <item>29177</item>, <item>31168</item>, <item>34057</item>, <item>36234</item>, <item>39726</item>, <item>43124</item>, <item>47605</item>,
+        <item>51370</item>, <item>55606</item>, <item>59746</item>, <item>67824</item>, <item>74954</item>, <item>81190</item>, <item>89568</item>, <item>96198</item>,
+        <item>100859</item>, <item>110308</item>, <item>122538</item>
     </string-array>
 
 

@@ -22,36 +22,6 @@ public class Analyzer {
         context = c;
     }
 
-//    public boolean getGpsFromGsm()  {
-//        Log.d(TAG, "getGpsFromGsm: enter");
-//        int[] r = new int[3];
-//        int count=0;
-//        double lat, lon;
-//        long timeStamp;
-//        String sql;
-//
-//        /** For all GSM points Find out the corresponding :
-//         **** latitude
-//         **** longitude
-//         **** route
-//         **** direction
-//         **** distance from origin
-//         **** timeStamp
-//         */
-//        for (Data loc: Data.location) {
-//            Log.d(TAG, "DataCollected : "+ loc.timeStamp+","+loc.cellID+","+loc.RSSI+","+loc.lat+","+loc.lon);
-//            /******* Send only 5 data from the entire window seperated by equal time Interval **********/
-//            if(loc.lat !=0 && loc.lon !=0)    FinalData.finalData.add(new FinalData(loc.lat, loc.lon, -1, loc.timeStamp));
-//        }
-//
-//        /****** RouteID is the route with maximum number of counts *******/
-//        routeID = 1;
-//
-//        /****** get direction in which the trace is moving *******/
-//        getDirection();
-//
-//        return true;
-//    }
 
     public boolean getGpsFromGsm()  {
 
@@ -70,27 +40,28 @@ public class Analyzer {
          **** timeStamp
          */
 //        Log.d("legth", String.valueOf(Data.location.size()));
-        for (Data loc: Data.location) {
+        ArrayList<Data> x = Data.location;  //because of error concurrent modification
+        for (Data loc: x) {
 
-            op = getOperator(loc.operator);
+            op = "Idea";
             /*sql = "SELECT * FROM "+ DatabaseHandler.locationMAP +" WHERE cellID = "+loc.cellID+
                     " AND RSSI = "+loc.RSSI + " AND operator = \""+op+"\"";
             */
             sql = "SELECT * FROM "+ DatabaseHandler.locationMAP +" WHERE cellID = "+loc.cellID+ " AND operator = \""+op+"\"";
+
             ArrayList<ArrayList<String>> resultSet = new DatabaseHandler(context).readLocationMap(sql);
            // Log.d("sds", String.valueOf(resultSet));
             if(!resultSet.isEmpty())    {
 
-                double dis = 999999999;
+               // double dis = 999999999;
+                int diff = 99999;
                 for(ArrayList<String> s : resultSet){
-                    double zx = haversine(loc.lat, loc.lon, Double.parseDouble(s.get(6)), Double.parseDouble(s.get(7)));
-                    if(zx < dis){
-                        dis = zx;
 
+                    int zx = Math.abs(loc.RSSI - Integer.parseInt(s.get(3)));
+                    if(zx < diff){
+                        diff = zx;
                         lat = Double.parseDouble(s.get(4));
                         lon = Double.parseDouble(s.get(5));
-                       // Log.d("qwre",s.get(4)+" "+s.get(5));
-                        //Log.d("asdas",lat+" "+lon);
                     }
 
                 }
@@ -121,8 +92,14 @@ public class Analyzer {
         /****** get direction in which the trace is moving *******/
 //        if(!getDirection()) return false;
 
-        getDirection();
+        for(FinalData fd : FinalData.finalData)  {
 
+            Log.d("dist", String.valueOf(fd.dist));
+//            Log.d(TAG, "Final Data : "+fd.lat+", "+fd.lon+", "+fd.dist+", "+routeID+", "+direction+", "+fd.timeStamp);
+        }
+        Log.d("before direction","Before");
+        getDirection();
+        Log.d("after direction","After");
 //        Log.d(TAG, "getGpsFromGsm: Fin Data"+lat+","+lon+","+routeID+","+direction);
 
         /********* If number of matches of cellID_rssi pair doest exceed a threshold, reject the data ********/
@@ -140,7 +117,7 @@ public class Analyzer {
     }
 
     public boolean getDirection()  {
-
+        Log.d("Inside direction","Inside");
         double distFromInitialStn1=0, distFromInitialStnN=0, distFromFinalStn1=0, distFromFinalStnN=0;
         FinalData d;
         StationMap nearestStn;
@@ -176,6 +153,8 @@ public class Analyzer {
         for(FinalData fd : FinalData.finalData)  {
             fd.dist = flag? nearestStn.distOrigin + haversine(fd.lat,fd.lon,nearestStn.lat,nearestStn.lon) :
                     nearestStn.distOrigin - haversine(fd.lat,fd.lon,nearestStn.lat,nearestStn.lon);
+
+            //Log.d("dist", String.valueOf(fd.dist));
 //            Log.d(TAG, "Final Data : "+fd.lat+", "+fd.lon+", "+fd.dist+", "+routeID+", "+direction+", "+fd.timeStamp);
         }
 //        Log.d(TAG, "Final Data : ====================================================================================");
@@ -281,48 +260,6 @@ public class Analyzer {
     public void isOnTrain() {
 
         String jsonArray;
-        int i=0;
-
-        /**** Calculate sqrt(x2 + y2) for accelerometer data analysis ****/
-        double[] dataXY = new double[MotionData.reorientedMotion.size()];
-        for (MotionData d: MotionData.reorientedMotion) {
-            dataXY[i] = Math.sqrt(d.x*d.x + d.y*d.y);
-        }
-
-        /***** Calculate the feature values fluctuation, mean, var, numThresh *******/
-        double thres = 4;
-        double mean = 0, var= 0, fluc=0, valThres=0, prev = 0;
-        for (int j = 0; j < dataXY.length; j++) {
-            mean += dataXY[j];
-            if(dataXY[j] > thres)  valThres++;
-            fluc += (dataXY[j]-prev);
-            prev = dataXY[j];
-        }
-        mean /= dataXY.length;
-        for (int j = 0; j < dataXY.length; j++) {
-            var += (dataXY[j] - mean) * (dataXY[j] - mean);
-        }
-        var /= dataXY.length;
-
-        /****** Create test data to be classified by svm *****/
-        double[][] xTest = new double[1][4];
-        xTest[0][0] = fluc;
-        xTest[0][1] = mean;
-        xTest[0][2] = var;
-        xTest[0][3] = valThres;
-
-        /***** Classify data from SVM. 1: train, 0: Others *******/
-
-      // ---------------- //
-
-         //double[] yPred = new Classify().svmPredict(xTest);
-
-        /***** Delete old Reoriented accelerometer data ******/
-        MotionData.reorientedMotion.clear();
-
-        /****** If svm classifier detects data on Train, Send data to server *******/
-          //if(yPred[0] == 1) {
-
             try {
                 Log.d(TAG, "isOnTrain: True...... Yes");
                 /******* Create json array of Location data *******/
@@ -350,6 +287,7 @@ public class Analyzer {
         JSONArray jArray = new JSONArray();
         for (int i=0; i<FinalData.finalData.size(); i++) {
             FinalData d = FinalData.finalData.get(i);
+            if(d.dist==-1) continue;
             jObj = new JSONObject();
             jObj.put("lat",d.lat);
             jObj.put("lon",d.lon);
