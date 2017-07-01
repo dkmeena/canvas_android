@@ -25,6 +25,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -122,15 +124,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if(v.getId()==R.id.query){
 
-            int spinner_pos = spinner.getSelectedItemPosition();
-            Log.d("sd", String.valueOf(spinner_pos));
+            final int[] spinner_pos = {spinner.getSelectedItemPosition()};
+            Log.d("sd", String.valueOf(spinner_pos[0]));
             ((LinearLayout)v1.getParent()).removeView(v1);
             ((LinearLayout)v2.getParent()).removeView(v2);
-            route=spinner_pos;
+            route= spinner_pos[0];
             v1 = new MyView1(this);
             layout1.addView(v1, 500, 4900);
             v2 = new MyView2(this);
             layout2.addView(v2,500,4900);
+
+            Timer timer = new Timer ();
+            TimerTask hourlyTask = new TimerTask () {
+                @Override
+                public void run () {
+
+                   runOnUiThread(new Runnable() {
+                       @Override
+                       public void run() {
+                           spinner_pos[0] = spinner.getSelectedItemPosition();
+                           Log.d("sd", String.valueOf(spinner_pos[0]));
+                           ((LinearLayout)v1.getParent()).removeView(v1);
+                           ((LinearLayout)v2.getParent()).removeView(v2);
+                           route= spinner_pos[0];
+                           v1 = new MyView1(getApplicationContext());
+                           layout1.addView(v1, 500, 4900);
+                           v2 = new MyView2(getApplicationContext());
+                           layout2.addView(v2,500,4900);
+                       }
+                   });
+
+                }
+            };
+
+            timer.schedule(hourlyTask, 5000, 5000);
+
 
         }
 
@@ -178,15 +206,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     canvas.drawText(Central[i]+" : "+d+" min",25,200*i,paint);
                 }
 
-                results = new RequestHandler().sendPostRequest("http://10.129.28.97:8007/FindMyTrain/Reporter", 1 + "");
+                results = new RequestHandler().sendPostRequest("http://10.129.28.168:8007/FindMyTrain/Reporter", 1 + "");
                 //results = "20000 --> 23000";
                 Log.d("result",results);
-                String[] s = results.split(",");
+                /*String[] s = results.split(",");
                 String[] s1 = s[0].split(" --- > ");
                 Double i = Double.parseDouble(s1[0]);
                 Double j = Double.parseDouble(s1[1]);
                 Log.d("dzs", String.valueOf(i));
-                int p = (int) ((i+j)/2);
+                int p = (int) ((i+j)/2);*/
+
+                int p=2000;
 //                int initp = (int) (4800*i/50000);
 //                int finalp = (int) (4800*j/50000);
 //                int initp = 4800*20000/50000;
@@ -231,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     canvas.drawText(Harbour[i]+" : "+d+" min",25,200*i,paint);
                 }
 
-                results = new RequestHandler().sendPostRequest("http://10.129.28.97:8007/FindMyTrain/Reporter", 2 + "");
+                results = new RequestHandler().sendPostRequest("http://10.129.28.168:8007/FindMyTrain/Reporter", 2 + "");
                 results = "16000 --> 17000";
                 int initp = 4800*16000/46000;
                 int finalp = 4800*17000/46000;
@@ -269,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     canvas.drawText(Western[i]+" : "+d+" min",25,x*i,paint);
                 }
 
-                results = new RequestHandler().sendPostRequest("http://10.129.28.97:8007/FindMyTrain/Reporter", 0 + "");
+                results = new RequestHandler().sendPostRequest("http://10.129.28.168:8007/FindMyTrain/Reporter", 0 + "");
                 results = "36000 --> 39000";
                 int initp = 4800*36000/122000;
                 int finalp = 4800*39000/122000;
@@ -328,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     canvas.drawText(Central[i] + " : " + d + " min", 25, 200 * i, paint);
                 }
 
-                results = new RequestHandler().sendPostRequest("http://10.129.28.97:8007/FindMyTrain/Reporter", 1 + "");
+                results = new RequestHandler().sendPostRequest("http://10.129.28.168:8007/FindMyTrain/Reporter", 1 + "");
                 results = "20000 --> 23000";
                 int initp = 4800 * 20000 / 50000;
                 int finalp = 4800 * 23000 / 50000;
@@ -366,7 +396,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     canvas.drawText(Harbour[i] + " : " + d + " min", 25, 200 * i, paint);
                 }
 
-                results = new RequestHandler().sendPostRequest("http://10.129.28.97:8007/FindMyTrain/Reporter", 2 + "");
+                results = new RequestHandler().sendPostRequest("http://10.129.28.168:8007/FindMyTrain/Reporter", 2 + "");
                 results = "16000 --> 17000";
                 int initp = 4800 * 16000 / 46000;
                 int finalp = 4800 * 17000 / 46000;
@@ -404,7 +434,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     canvas.drawText(Western[i] + " : " + d + " min", 25, x * i, paint);
                 }
 
-                results = new RequestHandler().sendPostRequest("http://10.129.28.97:8007/FindMyTrain/Reporter", 0 + "");
+                results = new RequestHandler().sendPostRequest("http://10.129.28.168:8007/FindMyTrain/Reporter", 0 + "");
                 results = "36000 --> 39000";
                 int initp = 4800 * 36000 / 122000;
                 int finalp = 4800 * 39000 / 122000;
